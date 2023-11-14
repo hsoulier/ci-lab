@@ -28,4 +28,4 @@ jobs:
         id: cache-build-save
         with:
           path: .next
-          key: build-${{ runner.os }}
+          key: build-nextjs

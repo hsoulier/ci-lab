@@ -25,8 +25,8 @@ jobs:
         id: cache-build-restore
         uses: actions/cache/restore@v3
         with:
-          path: .next/
-          key: build-${{ runner.os }}
+          path: .next
+          key: build-nextjs
       - name: Build not found
         if: steps.cache-build-restore.outputs.cache-hit != 'true'
         run: echo build not found
