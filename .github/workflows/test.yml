@@ -4,10 +4,12 @@ run-name: Verify build
 on:
   workflow_call:
 
-
 jobs:
   base:
-    name: Verify build
+    name: Verify build ${{ matrix.env }}
+    strategy:
+      matrix:
+        env: [summer, fall]
     runs-on: ubuntu-latest
     steps:
       - name: ✨ Checkout
@@ -27,10 +29,10 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: .next
-          key: build-nextjs-${{ github.run_id }}
+          key: build-nextjs-${{ github.run_id }}-${{ matrix.env }}
       - name: Build not found
         if: steps.cache-build-restore.outputs.cache-hit != 'true'
         run: echo build not found
       - name: Build found
         if: steps.cache-build-restore.outputs.cache-hit == 'true'
-        run: ls -la .next/
+        run: cat ./next/server/pages/index.html

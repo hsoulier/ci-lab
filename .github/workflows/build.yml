@@ -6,7 +6,10 @@ on:
 
 jobs:
   base:
-    name: ⚙️ Build
+    name: ⚙️ Build ${{ matrix.env }}
+    strategy:
+      matrix:
+        env: [summer, fall]
     runs-on: ubuntu-latest
     steps:
       - name: ✨ Checkout
@@ -23,9 +26,11 @@ jobs:
           key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
       - name: 📦 Build website
         run: yarn build
+        env:
+          NEXT_PUBLIC_ENV: ${{ matrix.env }}
       - name: 📦 Cache build
         uses: actions/cache/save@v3
         id: cache-build-save
         with:
           path: .next
-          key: build-nextjs-${{ github.run_id }}
+          key: build-nextjs-${{ github.run_id }}-${{ matrix.env }}
