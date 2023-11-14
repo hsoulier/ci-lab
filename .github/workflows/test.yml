@@ -35,4 +35,4 @@ jobs:
         run: echo build not found
       - name: Build found
         if: steps.cache-build-restore.outputs.cache-hit == 'true'
-        run: cat ./next/server/pages/index.html
+        run: cat .next/server/pages/index.html
