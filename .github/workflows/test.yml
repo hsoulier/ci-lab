@@ -4,6 +4,9 @@ run-name: Verify build
 on:
   workflow_call:
 
+permissions:
+  actions: write
+
 jobs:
   base:
     name: Verify build
@@ -20,7 +23,7 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: node_modules
-          key: yarn-${{ hashFiles('yarn.lock') }}
+          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
       - name: Restore Build
         id: cache-build-restore
         uses: actions/cache/restore@v3
@@ -33,3 +36,21 @@ jobs:
       - name: Build found
         if: steps.cache-build-restore.outputs.cache-hit == 'true'
         run: ls -la .next/
+      - name: Clear cache
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log("About to clear")
+            const caches = await github.rest.actions.getActionsCacheList({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            })
+            for (const cache of caches.data.actions_caches) {
+              console.log(cache)
+              github.rest.actions.deleteActionsCacheById({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                cache_id: cache.id,
+              })
+            }
+            console.log("Clear completed")

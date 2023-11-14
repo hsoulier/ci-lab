@@ -22,7 +22,7 @@ jobs:
         id: yarn-cache
         with:
           path: node_modules
-          key: yarn-${{ hashFiles('yarn.lock') }}
+          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
       - name: 📦 Install Dependencies
         if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn install --frozen-lockfile
