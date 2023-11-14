@@ -1,12 +1,9 @@
-name: Verify build
-run-name: Verify build
-
 on:
   workflow_call:
 
 jobs:
-  base:
-    name: Verify build ${{ matrix.env }}
+  Envs:
+    name: ${{ matrix.env }} environment
     strategy:
       matrix:
         env: [summer, fall]

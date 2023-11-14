@@ -1,12 +1,9 @@
-name: ⚙️ Build
-run-name: ⚙️ Build
-
 on:
   workflow_call:
 
 jobs:
-  base:
-    name: ⚙️ Build ${{ matrix.env }}
+  Versions:
+    name: Env ${{ matrix.env }}
     strategy:
       matrix:
         env: [summer, fall]

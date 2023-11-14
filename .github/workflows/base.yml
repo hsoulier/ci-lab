@@ -1,12 +1,8 @@
-name: ✨ Base
-run-name: ✨ Base
-
 on:
   workflow_call:
 
 jobs:
-  base:
-    name: ✨ Base
+  Node:
     runs-on: ubuntu-latest
     steps:
       - name: ✨ Checkout
