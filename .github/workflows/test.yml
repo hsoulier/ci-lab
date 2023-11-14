@@ -27,5 +27,9 @@ jobs:
         with:
           path: .next/
           key: build-${{ runner.os }}
-      - name: 🚀 Check build structure
-        run: ${{steps.cache-build-restore.outputs.cache-hit != 'true' && 'echo build not found' || 'ls -la .next/'}}
+      - name: Build not found
+        if: steps.cache-build-restore.outputs.cache-hit != 'true'
+        run: echo build not found
+      - name: Build found
+        if: steps.cache-build-restore.outputs.cache-hit == 'true'
+        run: ls -la .next/

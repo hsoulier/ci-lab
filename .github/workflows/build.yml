@@ -24,7 +24,7 @@ jobs:
       - name: 📦 Build website
         run: yarn build
       - name: 📦 Cache build
-        uses: actions/cache@v3
+        uses: actions/cache/save@v3
         id: cache-build-save
         with:
           path: .next
