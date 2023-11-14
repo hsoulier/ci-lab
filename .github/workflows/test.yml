@@ -26,6 +26,6 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: .next/
-          key: build-${{github.run_id}}-${{ hashFiles('yarn.lock') }}
+          key: build-${{ runner.os }}
       - name: 🚀 Check build structure
         run: ${{steps.cache-build-restore.outputs.cache-hit != 'true' && 'echo build not found' || 'ls -la .next/'}}

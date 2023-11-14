@@ -28,4 +28,4 @@ jobs:
         id: cache-build-save
         with:
           path: .next
-          key: build-${{github.run_id}}-${{ hashFiles('yarn.lock') }}
+          key: build-${{ runner.os }}
