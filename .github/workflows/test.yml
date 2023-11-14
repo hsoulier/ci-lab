@@ -17,7 +17,7 @@ jobs:
           node-version: "20"
           cache: "yarn"
       - name: 📦 Cache Dependencies
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
         with:
           path: node_modules
           key: yarn-${{ hashFiles('yarn.lock') }}
