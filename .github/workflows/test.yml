@@ -20,13 +20,13 @@ jobs:
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+          key: yarn-${{ hashFiles('yarn.lock') }}
       - name: Restore Build
         id: cache-build-restore
         uses: actions/cache/restore@v3
         with:
           path: .next
-          key: build-nextjs
+          key: build-nextjs-${{ github.run_id }}
       - name: Build not found
         if: steps.cache-build-restore.outputs.cache-hit != 'true'
         run: echo build not found
