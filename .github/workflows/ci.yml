@@ -1,0 +1,12 @@
+name: learn-github-actions
+run-name: ${{ github.actor }} is learning GitHub Actions
+on: [push]
+jobs:
+  base:
+    uses: ./.github/workflows/base.yml
+  build:
+    needs: base
+    uses: ./.github/workflows/build.yml
+  test:
+    needs: build
+    uses: ./.github/workflows/test.yml

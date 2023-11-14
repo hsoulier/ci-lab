@@ -1,0 +1,31 @@
+name: Verify build
+run-name: Verify build
+
+on:
+  workflow_call:
+
+jobs:
+  base:
+    name: Verify build
+    runs-on: ubuntu-latest
+    steps:
+      - name: ✨ Checkout
+        uses: actions/checkout@v4
+      - name: 🧶 Install Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+      - name: 📦 Cache Dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+      - name: Restore Build
+        id: cache-build-restore
+        uses: actions/cache/restore@v3
+        with:
+          path: .next/
+          key: build-${{github.run_id}}-${{ hashFiles('yarn.lock') }}
+      - name: 🚀 Check build structure
+        run: ${{steps.cache-build-restore.outputs.cache-hit != 'true' && 'echo build not found' || 'ls -la .next/'}}

@@ -1,0 +1,28 @@
+name: ✨ Base
+run-name: ✨ Base
+
+on:
+  workflow_call:
+
+jobs:
+  base:
+    name: ✨ Base
+    runs-on: ubuntu-latest
+    steps:
+      - name: ✨ Checkout
+        uses: actions/checkout@v4
+      - name: 🧶 Install Yarn
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          cache: "yarn"
+          cache-dependency-path: yarn.lock
+      - name: 🏎️ Cache Dependencies
+        uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: node_modules
+          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+      - name: 📦 Install Dependencies
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn install --frozen-lockfile
