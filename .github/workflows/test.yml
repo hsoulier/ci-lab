@@ -4,8 +4,6 @@ run-name: Verify build
 on:
   workflow_call:
 
-permissions:
-  actions: write
 
 jobs:
   base:
