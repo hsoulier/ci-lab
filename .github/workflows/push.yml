@@ -12,6 +12,9 @@ jobs:
         id: find-pull-request
         with:
           branch: ${{github.ref_name}}
+      - name: cancelling
+        if: steps.find-pull-request.outputs.state == 'open'
+        uses: andymckay/cancel-action@0.3
           
       - run: echo "Pull Request ${number} is ${state} (${sha})"
         env:
