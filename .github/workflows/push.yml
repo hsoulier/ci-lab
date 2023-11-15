@@ -1,0 +1,22 @@
+name: CI
+run-name: CI ${{ github.ref_name }}
+on: [push]
+
+jobs:
+  base:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find Pull Request
+        uses: juliangruber/find-pull-request-action@v1
+        id: find-pull-request
+        with:
+          branch: ${{github.ref_name}}
+      - name: Infos PR
+        run: echo "${infos}"
+        env:
+          infos: ${{ steps.find-pull-request.outputs }}
+      - run: echo "Pull Request ${number} (${sha})"
+        env:
+          number: ${{ steps.find-pull-request.outputs.number }}
+          sha: ${{ steps.find-pull-request.outputs.head-sha }}
