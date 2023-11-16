@@ -1,14 +1,16 @@
 module.exports = async ({ github, context }) => {
-  console.log("About to clear", context?.payload?.repository?.owner?.login || "no values")
-  // console.dir(context?.payload?.repository?.owner?.login, { depth: null })
+  console.log(
+    "About to clear",
+    context?.payload?.repository?.owner?.login || "no values"
+  )
 
   const { data: pull } = await github.rest.pulls.list({
     owner: context.repo.owner,
     repo: context.repo.repo,
-    ref: `${context.payload.owner}:${context.payload.ref}`,
+    ref: `${context?.payload?.repository?.owner?.login}:${context?.payload?.ref}`,
     state: "open",
   })
-  console.log("List of PR")
+  console.log("List of PR", pull.length)
   console.dir(pull, { depth: null })
 
   const { data: caches } = await github.rest.actions.getActionsCacheList({
