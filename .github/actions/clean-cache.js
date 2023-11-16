@@ -3,7 +3,7 @@ module.exports = async ({ github, context }) => {
   const branchName = context.payload.ref.replace("refs/heads/", "")
 
   console.log(branchName)
-  
+
   const { data: pull } = await github.rest.pulls.list({
     owner: context.repo.owner,
     repo: context.repo.repo,
@@ -13,15 +13,18 @@ module.exports = async ({ github, context }) => {
   const pullList = pull.filter((pr) => pr.head.ref === branchName)
   console.log("List of PR", pullList.length)
   console.dir(pullList, { depth: null })
+  if (pullList.length === 0) {
+    return
+  }
 
   const { data: caches } = await github.rest.actions.getActionsCacheList({
     owner: context.repo.owner,
     repo: context.repo.repo,
   })
   const listCaches = caches.actions_caches.filter((cache) =>
-    cache.ref.includes("refs/pull")
+    cache.ref.includes(`refs/pull/${pullList[0].number}/merge`)
   )
-  console.log("List of caches")
+  console.log("List of caches", listCaches.length)
   console.dir(listCaches, { depth: null })
   // for (const cache of listCaches) {
   //   console.dir(cache, { depth: null })
