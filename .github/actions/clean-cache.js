@@ -1,5 +1,6 @@
 module.exports = async ({ github, context }) => {
   console.log("About to clear")
+  console.dir(context, { depth: null })
   const { data: pull } = await github.rest.pulls.list({
     owner: context.repo.owner,
     repo: context.repo.repo,
@@ -7,7 +8,7 @@ module.exports = async ({ github, context }) => {
   })
   console.log("List of PR")
   console.dir(pull, { depth: null })
-  
+
   const { data: caches } = await github.rest.actions.getActionsCacheList({
     owner: context.repo.owner,
     repo: context.repo.repo,
