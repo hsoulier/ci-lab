@@ -30,3 +30,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: echo ${{needs.base.result}}
+  clean:
+    runs-on: ubuntu-latest
+    needs: base
+    if: always()
+    steps:
+      - name: Clear cache
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log("About to clear")
+            const caches = await github.rest.actions.getActionsCacheList({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            })
+            for (const cache of caches.data.actions_caches) {
+              console.dir(cache, { depth: null })
+            }
+            console.log("Clear completed")
