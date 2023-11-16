@@ -7,11 +7,12 @@ module.exports = async ({ github, context }) => {
   const { data: pull } = await github.rest.pulls.list({
     owner: context.repo.owner,
     repo: context.repo.repo,
-    ref: `${context?.payload?.repository?.owner?.login}:${context?.payload?.ref}`,
     state: "open",
   })
-  console.log("List of PR", pull.length)
-  console.dir(pull, { depth: null })
+
+  const pullList = pull.filter((pr) => pr.head.ref === context.payload.ref)
+  console.log("List of PR", pullList.length)
+  console.dir(pullList, { depth: null })
 
   const { data: caches } = await github.rest.actions.getActionsCacheList({
     owner: context.repo.owner,
