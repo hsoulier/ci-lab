@@ -1,4 +1,4 @@
-module.exports = async ({ github, context }) => {
+module.exports = async ({ github, context }, onlyBuilds) => {
   console.log("About to clear")
   const branchName = context.payload.ref.replace("refs/heads/", "")
 
@@ -21,9 +21,13 @@ module.exports = async ({ github, context }) => {
     owner: context.repo.owner,
     repo: context.repo.repo,
   })
-  const listCaches = caches.actions_caches.filter((cache) =>
-    cache.ref.includes(`refs/pull/${pullList[0].number}/merge`)
-  )
+  const listCaches = caches.actions_caches.filter((cache) => {
+    const prCache = cache.ref.includes(`refs/pull/${pullList[0].number}/merge`)
+    if (onlyBuilds) {
+      return prCache && cache.includes("build-nextjs")
+    }
+    return prCache
+  })
   console.log("List of caches", listCaches.length)
   for (const cache of listCaches) {
     github.rest.actions.deleteActionsCacheById({

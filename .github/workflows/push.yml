@@ -12,13 +12,6 @@ jobs:
       has-pr: ${{ steps.state-of-pr.outputs.state }}
     steps:
       - uses: actions/checkout@v4
-      - name: Clear cache
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const script = require('./.github/actions/clean-cache.js')
-            script({github, context})
-
       - name: Find Pull Request
         uses: juliangruber/find-pull-request-action@v1
         id: find-pull-request

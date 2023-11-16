@@ -6,10 +6,20 @@ on:
 
 jobs:
   Prepare:
-    uses: ./.github/workflows/base.yml
+    uses: ./.github/actions/base.yml
   Build:
     needs: Prepare
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/actions/build.yml
   Deploy:
     needs: Build
-    uses: ./.github/workflows/test.yml
+    uses: ./.github/actions/test.yml
+  Clean:
+    runs-on: ubuntu-latest
+    needs: Deploy
+    steps:
+      - name: Clear cache
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const script = require('./.github/actions/clean-cache.js')
+            script({github, context}, true)
