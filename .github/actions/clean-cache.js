@@ -1,6 +1,6 @@
 module.exports = async ({ github, context }) => {
-  console.log("About to clear")
-  console.dir(context?.payload, { depth: null })
+  console.log("About to clear", context?.payload?.repository?.owner?.login || "no values")
+  // console.dir(context?.payload?.repository?.owner?.login, { depth: null })
 
   const { data: pull } = await github.rest.pulls.list({
     owner: context.repo.owner,
