@@ -25,13 +25,12 @@ module.exports = async ({ github, context }) => {
     cache.ref.includes(`refs/pull/${pullList[0].number}/merge`)
   )
   console.log("List of caches", listCaches.length)
-  console.dir(listCaches, { depth: null })
-  // for (const cache of listCaches) {
-  //   console.dir(cache, { depth: null })
-  //   github.rest.actions.deleteActionsCacheById({
-  //      owner: context.repo.owner,
-  //      repo: context.repo.repo,
-  //      cache_id: cache.id,
-  //    })
-  // }
+  for (const cache of listCaches) {
+    github.rest.actions.deleteActionsCacheById({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      cache_id: cache.id,
+    })
+  }
+  console.log("Done")
 }
