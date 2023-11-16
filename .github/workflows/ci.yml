@@ -1,6 +1,8 @@
-name: CI
-run-name: CI ${{ github.ref_name }}
-on: [push]
+name: PR
+run-name: PR ${{ github.ref_name }}
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, review_requested]
 
 jobs:
   Prepare:
