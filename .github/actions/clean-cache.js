@@ -1,16 +1,16 @@
 module.exports = async ({ github, context }) => {
-  console.log(
-    "About to clear",
-    context?.payload?.repository?.owner?.login || "no values"
-  )
+  console.log("About to clear")
+  const branchName = context.payload.ref.replace("refs/heads/", "")
 
+  console.log(branchName)
+  
   const { data: pull } = await github.rest.pulls.list({
     owner: context.repo.owner,
     repo: context.repo.repo,
     state: "open",
   })
 
-  const pullList = pull.filter((pr) => pr.head.ref === context.payload.ref)
+  const pullList = pull.filter((pr) => pr.head.ref === branchName)
   console.log("List of PR", pullList.length)
   console.dir(pullList, { depth: null })
 
