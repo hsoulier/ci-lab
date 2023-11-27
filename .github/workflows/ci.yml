@@ -6,7 +6,22 @@ on:
 
 jobs:
   Prepare:
-    uses: ./.github/workflows/base.yml
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🤝 List caches in the repo
+        id: list-cache
+        run: gh cache list --repo $REPO | grep -e "build-nextjs" > out.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+      - name: 👀 Sort clearable caches
+        run: "cat out.txt | grep -e 'build-nextjs' | cut -b 1-3 >> to-delete.txt"
+      - name: 🧹 Clean caches in the repo
+        run: "cat to-delete.txt | xargs -L1 gh cache delete"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # uses: ./.github/workflows/base.yml
   Build:
     needs: Prepare
     uses: ./.github/workflows/build.yml
