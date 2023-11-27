@@ -5,14 +5,13 @@ on:
     types: [opened, reopened, synchronize, review_requested]
 
 jobs:
-  test: 
+  test:
     runs-on: ubuntu-latest
     steps:
-      - run: gh cache list --repo hsoulier/ci-lab"
+      - run: gh cache list --repo hsoulier/ci-lab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-        
+
   # Prepare:
   #   uses: ./.github/workflows/base.yml
   # Build:
