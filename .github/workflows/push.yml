@@ -16,7 +16,7 @@ jobs:
         uses: juliangruber/find-pull-request-action@v1
         id: find-pull-request
         with:
-          branch: ${{github.ref_name}}
+          branch: ${{ github.ref_name }}
       - name: State of PR
         id: state-of-pr
         run: echo "state=${{ steps.find-pull-request.outputs.state == 'open' }}" >> "$GITHUB_OUTPUT"

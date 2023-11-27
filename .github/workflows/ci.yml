@@ -5,21 +5,29 @@ on:
     types: [opened, reopened, synchronize, review_requested]
 
 jobs:
-  Prepare:
-    uses: ./.github/workflows/base.yml
-  Build:
-    needs: Prepare
-    uses: ./.github/workflows/build.yml
-  Deploy:
-    needs: Build
-    uses: ./.github/workflows/test.yml
-  Clean:
+  test: 
     runs-on: ubuntu-latest
-    needs: Deploy
     steps:
-      - name: Clear cache
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const script = require('./.github/actions/clean-cache.js')
-            script({github, context}, true)
+      - run: gh cache list --repo hsoulier/ci-lab"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+        
+  # Prepare:
+  #   uses: ./.github/workflows/base.yml
+  # Build:
+  #   needs: Prepare
+  #   uses: ./.github/workflows/build.yml
+  # Deploy:
+  #   needs: Build
+  #   uses: ./.github/workflows/test.yml
+  # Clean:
+  #   runs-on: ubuntu-latest
+  #   needs: Deploy
+  #   steps:
+  #     - name: Clear cache
+  #       uses: actions/github-script@v6
+  #       with:
+  #         script: |
+  #           const script = require('./.github/actions/clean-cache.js')
+  #           script({github, context}, true)

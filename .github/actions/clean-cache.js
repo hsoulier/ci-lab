@@ -23,10 +23,7 @@ module.exports = async ({ github, context }, onlyBuilds) => {
   })
   const listCaches = caches.actions_caches.filter((cache) => {
     const prCache = cache.ref.includes(`refs/pull/${pullList[0].number}/merge`)
-    if (onlyBuilds) {
-      return prCache && cache.includes("build-nextjs")
-    }
-    return prCache
+    return onlyBuilds ? prCache && cache.includes("build-nextjs") : prCache
   })
   console.log("List of caches", listCaches.length)
   for (const cache of listCaches) {
