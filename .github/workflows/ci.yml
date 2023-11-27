@@ -7,19 +7,17 @@ on:
 jobs:
   Prepare:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
     steps:
       - name: 🤝 List caches in the repo
         id: list-cache
         run: gh cache list --repo $REPO | grep -e "build-nextjs" > out.txt
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
       - name: 👀 Sort clearable caches
         run: cat out.txt | grep -e "build-nextjs" | cut -b 1-3 >> to-delete.txt
       - name: 🧹 Clean caches in the repo
-        run: while read in; do gh cache delete "$in" --repo hsoulier/ci-lab; done < to-delete.txt
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: while read in; do gh cache delete "$in" --repo $REPO; done < to-delete.txt
 
     # uses: ./.github/workflows/base.yml
   Build:
