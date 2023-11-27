@@ -17,8 +17,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: Deploy
     steps:
-      - name: 🧹 Clear cache with GIthub CLI
-        run: gh cache list --repo $REPO | grep -e "build-nextjs" | cut -b 1-3 | xargs -L1 gh cache delete
+      - name: 🤝 List caches inthe repo
+        id: list-cache
+        run: gh cache list --repo $REPO | grep -e "build-nextjs"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
+      - name: 👀 Sort clearable caches
+        run: "${{steps.list-cache.outputs}} | grep -e 'build-nextjs' | cut -b 1-3"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 🧹 Clean caches in the repo
+        run: "${{steps.list-cache.outputs}} | xargs -L1 gh cache delete"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
