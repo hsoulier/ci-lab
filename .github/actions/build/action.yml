@@ -6,9 +6,8 @@ runs:
   steps:
     - name: Debug values
       run: |
-        echo "Secrets: ${{ env.secrets }}"
-        echo "Secret 1: ${{ env.secrets.SECRET1 == 'secret1' }}"
-        echo "Secret 2: ${{ env.secrets.SECRET2 }}"
+        echo "Secret 1: $SECRET1"
+        echo "Secret 2: $SECRET2"
       shell: bash
     - name: 🚚 Build
       run: yarn build
