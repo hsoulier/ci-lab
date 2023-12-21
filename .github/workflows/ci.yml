@@ -25,5 +25,5 @@ jobs:
         run: yarn install
       - name: 🚚 Build for deployment
         uses: ./.github/actions/build
-        with:
-          secrets: ${{ toJSON(secrets) }}
+        env:
+          secrets: ${{ secrets }}
