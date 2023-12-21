@@ -12,8 +12,8 @@ runs:
     - name: Debug values
       run: |
         echo "Secrets: ${{ env.secrets }}"
-        echo "Secret 1: ${{ fromJSON(env.secrets.secret1) == 'secret1' }}"
-        echo "Secret 2: ${{ fromJSON(env.secrets.secret2) == 'secret2' }}"
+        echo "Secret 1: ${{ env.secrets.secret1 == 'secret1' }}"
+        echo "Secret 2: ${{ env.secrets.secret2 == 'secret2' }}"
       shell: bash
     - name: 🚚 Build
       run: yarn build
