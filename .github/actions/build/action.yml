@@ -1,6 +1,12 @@
 name: Build
 description: Execute build for Cypress or Deploy to Firebase Hosting
 
+inputs:
+  env:
+    description: "Environment to run build"
+    required: true
+    default: "dev"
+
 runs:
   using: composite
   steps:
@@ -8,7 +14,10 @@ runs:
       run: |
         echo "Secret 1: $SECRET1"
         echo "Secret 2: $SECRET2"
+        echo "${{ inputs.env == 'prod' && SECRET1 || SECRET2 }}"
       shell: bash
     - name: 🚚 Build
       run: yarn build
+      env:
+        TEST: ${{ inputs.env == 'prod' && SECRET1 || SECRET2 }}
       shell: bash

@@ -28,3 +28,5 @@ jobs:
           secrets: ${{ toJSON(secrets) }}
       - name: 🚚 Build for deployment
         uses: ./.github/actions/build
+        with:
+          env: "prod"
