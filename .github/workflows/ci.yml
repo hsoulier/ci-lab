@@ -26,4 +26,4 @@ jobs:
       - name: 🚚 Build for deployment
         uses: ./.github/actions/build
         env:
-          secrets: ${{ secrets }}
+          secrets: ${{ toJSON(secrets) }}
