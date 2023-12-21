@@ -15,7 +15,7 @@ runs:
       run: |
         echo "Secret 1: $SECRET1"
         echo "Secret 2: $SECRET2"
-        echo ${{ inputs.env == 'prod' && $SECRET1 || $SECRET2 }}
+        echo ${{ inputs.env == 'prod' && "$SECRET1" || "$SECRET2" }}
     # - name: 🚚 Build
     #   run: yarn build
     #   env:
