@@ -1,0 +1,28 @@
+name: Clean Cache
+description: Clean cache for Next.js builds
+
+inputs:
+  github-token:
+    description: "GitHub token"
+    required: true
+  name-cache:
+    description: "Name of cache to delete"
+    required: true
+    default: "dev-build-nextjs"
+
+runs:
+  using: composite
+  steps:
+    - name: 🤝 List caches in the repo
+      shell: bash
+      id: list-cache
+      run: gh cache list --repo $REPO | grep -e "dev-build-nextjs" > out.txt
+    - name: 👀 Sort clearable caches
+      shell: bash
+      run: cat out.txt | cut -b 1-3 >> to-delete.txt
+    - run: cat to-delete.txt
+      shell: bash
+    - name: 🧹 Clean caches in the repo
+      shell: bash
+      run: |
+        while read cache_id; do curl -L -X DELETE -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ inputs.github-token }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/${{ github.repository }}/actions/caches/"$cache_id"; done < to-delete.txt

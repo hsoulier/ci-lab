@@ -4,10 +4,26 @@ on: [push]
 
 jobs:
   Prepare:
-    uses: ./.github/workflows/base.yml
-  Build:
-    needs: Prepare
-    uses: ./.github/workflows/build.yml
-  Deploy:
-    needs: Build
-    uses: ./.github/workflows/test.yml
+    name: 📦 Base
+    runs-on: ubuntu-latest
+    steps:
+      - name: ✨ Checkout
+        uses: actions/checkout@v4
+      - name: 🧶 Install Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+      - name: 🏎️ Cache Dependencies
+        uses: actions/cache@v3
+        id: node-dependencies
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      - name: 📦 Install Dependencies
+        if: steps.node-dependencies.outputs.cache-hit != 'true'
+        run: yarn install
+      - name: 🚚 Build for deployment
+        uses: ./.github/actions/build
+        with:
+          secrets: ${{ toJSON(secrets) }}

@@ -1,0 +1,25 @@
+on:
+  workflow_call:
+
+jobs:
+  Build-Cypress:
+    name: Build Cypress
+    runs-on: ubuntu-latest
+    steps:
+      - name: ✨ Checkout
+        uses: actions/checkout@v4
+      - name: 🧶 Install Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+      - name: 📦 Cache Dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+      - name: 📦 Build website
+        run: yarn build
+        env:
+          NODE_ENV: production
+          ENV: cypress

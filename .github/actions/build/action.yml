@@ -1,0 +1,21 @@
+name: Build
+description: Execute build for Cypress or Deploy to Firebase Hosting
+
+inputs:
+  secrets:
+    description: "Secrets to use in the build"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Debug values
+      run: |
+        echo "Secrets: ${{ inputs.secrets }}"
+        echo "Secrets: ${{ secrets }}"
+      shell: bash
+      env:
+        SECRETS: ${{ inputs.secrets }}
+    - name: 🚚 Build
+      run: yarn build
+      shell: bash
