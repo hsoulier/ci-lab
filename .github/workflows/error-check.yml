@@ -1,0 +1,277 @@
+name: 🤝 CI for Pull Request
+on:
+  pull_request:
+    types: [review_requested]
+
+concurrency:
+  group: ${{ github.event.pull_request.id }}
+  cancel-in-progress: true
+
+jobs:
+  base:
+    name: 📦 Base
+    runs-on: ubuntu-latest
+    steps:
+      - name: ✨ Checkout
+        uses: actions/checkout@v4
+      - name: 🧶 Install Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+      - name: 🏎️ Cache Dependencies
+        uses: actions/cache@v3
+        id: node-dependencies
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      - name: 📦 Install Dependencies
+        if: steps.node-dependencies.outputs.cache-hit != 'true'
+        run: yarn install
+      - name: 🔜 Add env variable
+        run: |
+          echo "PROJECT_ID=${{contains(github.event.pull_request.title, '(fall_deploy)') && 'flim-prod' || 'pusher-292200'}}" >> .env
+          echo "CLIENT_EMAIL=${{contains(github.event.pull_request.title, '(fall_deploy)') && secrets.CLIENT_EMAIL_PROD || secrets.CLIENT_EMAIL_DEV }}" >> .env
+          echo "PRIVATE_KEY=${{contains(github.event.pull_request.title, '(fall_deploy)') && secrets.PRIVATE_KEY_PROD || secrets.PRIVATE_KEY_DEV }}" >> .env
+      - name: 🎛️ Setting up tests
+        run: node ./cypress/scripts/clean.mjs && node ./cypress/scripts/prepare.mjs
+      - name: 🔒 Define secrets to env
+        uses: oNaiPs/secrets-to-env-action@v1
+        with:
+          secrets: ${{ toJSON(secrets) }}
+      - name: 👀 Build for tests
+        uses: ./.github/actions/build
+        with:
+          env: ${{contains(github.event.pull_request.title, '(fall_deploy)') && 'prod' || 'dev'}}
+          isFall: ${{contains(github.event.pull_request.title, '(fall_deploy)') && 'true' || ''}}
+          build-type: "cypress"
+      - name: 📦 Cache build for Cypress
+        uses: actions/cache/save@v3
+        id: cache-build-dev-cypress-save
+        with:
+          path: .next
+          key: dev-build-nextjs-cypress-${{ github.run_id }}
+      - name: 🚚 Build for deployment
+        uses: ./.github/actions/build
+        with:
+          env: ${{contains(github.event.pull_request.title, '(fall_deploy)') && 'prod' || 'dev'}}
+          isFall: ${{contains(github.event.pull_request.title, '(fall_deploy)') && 'true' || ''}}
+          build-type: "website"
+      - name: 📦 Cache build for PR deployment
+        uses: actions/cache/save@v3
+        id: cache-build-dev-deploy-save
+        with:
+          path: .next
+          key: dev-build-nextjs-dev-${{ github.run_id }}
+  unit-test:
+    name: "🧪 Unit Tests"
+    # if: contains(github.event.pull_request.title, '(no unit-test)') != true
+    runs-on: ubuntu-latest
+    needs:
+      - base
+    steps:
+      - name: ✨ Checkout
+        uses: actions/checkout@v4
+      - name: 🧶 Install Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+      - name: 📦 Cache Dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      - name: 🧪 Run Unit Tests
+        run: yarn test:unit:ci
+        env:
+          NEXT_PUBLIC_FBASE_API_KEY: "${{ contains(github.event.pull_request.title, '(fall_deploy)') && secrets.NEXT_PUBLIC_FBASE_API_KEY  || secrets.NEXT_PUBLIC_DEV_FBASE_API_KEY }}"
+          NEXT_PUBLIC_FBASE_PROJECT_ID: "${{ contains(github.event.pull_request.title, '(fall_deploy)') && 'flim-prod' || 'pusher-292200' }}"
+  cypress-tests:
+    name: 🖼️ Cypress Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        container: [e2e-1, e2e-2, component]
+    needs: base
+    steps:
+      - name: ✨ Checkout
+        uses: actions/checkout@v4
+      - name: 🧶 Install Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+      - name: 📦 Retrieve Dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      - name: 🤝 Restore Build
+        id: cache-build-restore
+        uses: actions/cache/restore@v3
+        with:
+          path: .next
+          key: dev-build-nextjs-cypress-${{ github.run_id }}
+      - name: 👀 Miss cache, rebuild
+        if: steps.cache-build-restore.outputs.cache-hit != 'true'
+        uses: ./.github/actions/build
+        with:
+          isFall: ${{ contains(github.event.pull_request.title, '(fall_deploy)') && 'true' || ''}}
+          env: ${{ contains(github.event.pull_request.title, '(fall_deploy)') && 'prod' || 'dev'}}
+          build-type: "cypress"
+      - name: 📦 Install Cypress binaries
+        run: npx cypress install
+      - name: 🖼 e2e Tests
+        uses: cypress-io/github-action@v6
+        continue-on-error: false
+        timeout-minutes: 20
+        with:
+          wait-on: "http://localhost:3000"
+          start: "yarn serve"
+          config-file: cypress.config.ts
+          browser: chrome
+          headed: false
+          record: true
+          env: true
+        env:
+          CYPRESS_RECORD_KEY: "b5f505c0-9900-402c-90b9-527edf7c1062"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CYPRESS_MODE: ${{ contains(github.event.pull_request.title, '(fall_deploy)') && 'prod' || 'dev'}}
+          CYPRESS_PROJECT_ID: "kif3tp"
+      - name: 🖼 Component Tests
+        uses: cypress-io/github-action@v6
+        with:
+          install: false
+          component: true
+          config-file: cypress.config.ts
+          record: true
+          env: true
+        env:
+          CYPRESS_RECORD_KEY: "b5f505c0-9900-402c-90b9-527edf7c1062"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CYPRESS_MODE: ${{ contains(github.event.pull_request.title, '(fall_deploy)') && 'prod' || 'dev'}}
+          CYPRESS_PROJECT_ID: "kif3tp"
+          NEXT_PUBLIC_GTM_ID: ${{ contains(github.event.pull_request.title, '(fall_deploy)') && 'GTM-MGH9PP5' || 'GTM-TGHXLRJ'}}
+          NEXT_PUBLIC_FBASE_API_KEY: ${{ contains(github.event.pull_request.title, '(fall_deploy)') && env.NEXT_PUBLIC_FBASE_API_KEY  || env.NEXT_PUBLIC_DEV_FBASE_API_KEY }}
+          NEXT_PUBLIC_FBASE_PROJECT_ID: ${{ contains(github.event.pull_request.title, '(fall_deploy)') && 'flim-prod' || 'pusher-292200'}}
+          NEXT_PUBLIC_FBASE_MESSAGING_SENDER_ID: ${{  contains(github.event.pull_request.title, '(fall_deploy)') && env.NEXT_PUBLIC_FBASE_MESSAGING_SENDER_ID || env.NEXT_PUBLIC_DEV_FBASE_MESSAGING_SENDER_ID }}
+          NEXT_PUBLIC_FBASE_APP_ID: ${{ contains(github.event.pull_request.title, '(fall_deploy)') && env.NEXT_PUBLIC_FBASE_APP_ID || env.NEXT_PUBLIC_DEV_FBASE_APP_ID }}
+          NEXT_PUBLIC_FBASE_MEASUREMENT_ID: ${{ contains(github.event.pull_request.title, '(fall_deploy)') && env.NEXT_PUBLIC_FBASE_MEASUREMENT_ID || env.NEXT_PUBLIC_DEV_FBASE_MEASUREMENT_ID }}
+          NEXT_PUBLIC_API_BASE_URL: ${{ contains(github.event.pull_request.title, '(fall_deploy)') && 'https://api.flim.ai/2.0.0' || 'https://dev-api.flim.ai/2.0.0' }}
+          NEXT_PUBLIC_DOWNLOAD_URL: ${{ contains(github.event.pull_request.title, '(fall_deploy)') && 'https://downloader.fl.im/zip' || 'https://downloader-dev.fl.im/zip' }}
+  deploy:
+    if: contains(github.event.pull_request.title, '(fall_deploy)') != true
+    name: "🚀 Build & Deploy the PR"
+    runs-on: ubuntu-latest
+    needs:
+      - base
+      - unit-test
+      - cypress-tests
+    steps:
+      - name: ✨ Checkout
+        uses: actions/checkout@v4
+      - name: 🧶 Install Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+      - name: 📦 Retrieve Dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      - name: 🤝 Restore Build
+        id: cache-build-restore
+        uses: actions/cache/restore@v3
+        with:
+          path: .next
+          key: dev-build-nextjs-dev-${{ github.run_id }}
+      - name: 🔒 Define secrets to env
+        if: steps.cache-build-restore.outputs.cache-hit != 'true'
+        uses: oNaiPs/secrets-to-env-action@v1
+        with:
+          secrets: ${{ toJSON(secrets) }}
+      - name: 🚚 Build for deployment
+        if: steps.cache-build-restore.outputs.cache-hit != 'true'
+        uses: ./.github/actions/build
+        with:
+          env: "dev"
+          build-type: "website"
+      - name: 🚀 Export site
+        run: yarn export
+      - name: 🔥 Deploy to Firebase
+        id: firebase_deploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_PUSHER_292200 }}"
+          projectId: pusher-292200
+          target: "default"
+        env:
+          FIREBASE_CLI_PREVIEWS: hostingchannels
+  deploy_fall:
+    name: "🚀 Deploy on Fall"
+    if: ${{contains(github.event.pull_request.title, '(fall_deploy)')}}
+    runs-on: ubuntu-latest
+    needs:
+      - base
+      - unit-test
+      - cypress-tests
+    steps:
+      - name: ✨ Checkout
+        uses: actions/checkout@v4
+      - name: 🧶 Install Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+      - name: 📦 Retrieve Dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      - name: 🤝 Restore Build
+        id: cache-build-restore
+        uses: actions/cache/restore@v3
+        with:
+          path: .next
+          key: dev-build-nextjs-dev-${{ github.run_id }}
+      - name: 👀 Miss cache, rebuild
+        if: steps.cache-build-restore.outputs.cache-hit != 'true'
+        uses: ./.github/actions/build
+        with:
+          env: "prod"
+          isFall: ${{contains(github.event.pull_request.title, '(fall_deploy)') && 'true' || ''}}
+          build-type: "website"
+      - name: 🚀 Export site
+        run: yarn export
+      - name: 🔥 Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{secrets.FIREBASE_SERVICE_ACCOUNT_FLIM_PROD}}"
+          projectId: "flim-prod"
+          channelId: live
+          target: "flim-fall"
+        env:
+          FIREBASE_CLI_PREVIEWS: hostingchannels
+  clean:
+    runs-on: ubuntu-latest
+    needs:
+      - base
+      - unit-test
+      - cypress-tests
+      - deploy
+    if: always()
+    permissions:
+      actions: write
+      contents: write
+    steps:
+      - name: ✨ Checkout
+        uses: actions/checkout@v4
+      - name: 🤝 Clean cache
+        uses: ./.github/actions/delete-cache
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
