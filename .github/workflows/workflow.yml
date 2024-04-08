@@ -1,0 +1,11 @@
+on:
+  workflow_call:
+    
+
+jobs:
+  base:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo ${{secrets.GITHUB_TOKEN}}
+      - run: echo FOO=${{secrets.FOO}} | base64
