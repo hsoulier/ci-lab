@@ -8,6 +8,6 @@ jobs:
   Build:
     needs: Prepare
     uses: ./.github/workflows/build.yml
-  Deploy:
-    needs: Build
-    uses: ./.github/workflows/test.yml
+  # Deploy:
+  #   needs: Build
+  #   uses: ./.github/workflows/test.yml

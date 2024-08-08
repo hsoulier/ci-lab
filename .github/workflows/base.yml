@@ -7,18 +7,28 @@ jobs:
     steps:
       - name: ✨ Checkout
         uses: actions/checkout@v4
+
       - name: 🧶 Install Yarn
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "yarn"
           cache-dependency-path: yarn.lock
+
+      - name: Get npm cache directory
+        id: npm-cache-dir
+        run: echo "dir=$(yarn cache list)" >> ${GITHUB_OUTPUT}
+
       - name: 🏎️ Cache Dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: yarn-cache
         with:
-          path: node_modules
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
           key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+            ${{ runner.os }}-
+
       - name: 📦 Install Dependencies
         if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn install --frozen-lockfile

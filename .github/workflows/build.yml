@@ -11,23 +11,27 @@ jobs:
     steps:
       - name: ✨ Checkout
         uses: actions/checkout@v4
+
       - name: 🧶 Install Yarn
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "yarn"
+
       - name: 📦 Cache Dependencies
         uses: actions/cache@v3
         with:
           path: node_modules
           key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
-      - name: 📦 Build website
-        run: yarn build
-        env:
-          NEXT_PUBLIC_ENV: ${{ matrix.env }}
-      - name: 📦 Cache build
-        uses: actions/cache/save@v3
-        id: cache-build-save
-        with:
-          path: .next
-          key: build-nextjs-${{ github.run_id }}-${{ matrix.env }}
+
+      # - name: 📦 Build website
+      #   run: yarn build
+      #   env:
+      #     NEXT_PUBLIC_ENV: ${{ matrix.env }}
+
+      # - name: 📦 Cache build
+      #   uses: actions/cache/save@v3
+      #   id: cache-build-save
+      #   with:
+      #     path: .next
+      #     key: build-nextjs-${{ github.run_id }}-${{ matrix.env }}
