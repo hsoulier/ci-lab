@@ -1,0 +1,20 @@
+name: PR Clean caches
+run-name: Clean caches
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  actions: write
+
+jobs:
+  base:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clear cache
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const script = require('./.github/actions/clean-cache.js')
+            script({github, context}, false)
