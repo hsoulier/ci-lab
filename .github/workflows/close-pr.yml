@@ -9,4 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
+          echo ${{ github }}
+      - run: |
           echo The PR was merged
